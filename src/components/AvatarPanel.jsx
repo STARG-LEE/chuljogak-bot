@@ -145,8 +145,8 @@ export default function AvatarPanel({
           {videoReady && (
             <div className={styles.nameplate}>
               <div className={styles.nameplateInner}>
-                <span className={styles.nameplateName}>내 AI 아바타</span>
-                <span className={styles.nameplateSub}>{IS_FACE ? '2D 아바타' : IS_LIVE2D ? 'Live2D' : IS_2D ? '2D 이미지 아바타' : 'VRM + three-vrm'}</span>
+                <span className={styles.nameplateName}>강캡틴</span>
+                <span className={styles.nameplateSub}>출조각 AI 선장 · 20년 경력</span>
               </div>
             </div>
           )}

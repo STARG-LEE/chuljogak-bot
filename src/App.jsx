@@ -2,7 +2,8 @@ import { useState, useRef, useCallback, useEffect } from 'react'
 import AvatarPanel from './components/AvatarPanel'
 import ChatPanel from './components/ChatPanel'
 import AuthModal from './components/AuthModal'
-import FishPip from './components/FishPip'
+import CaptainDock from './components/CaptainDock'
+import OceanLanding from './ocean/OceanLanding'
 import styles from './App.module.css'
 import { newSessionId, saveChat, getUser, clearAuth, verifyToken } from './lib/api'
 import { MicRecorder, isMicRecorderSupported } from './lib/stt'
@@ -29,8 +30,8 @@ const ECHO_RESUME_DELAY_MS = 700
 // ─── Greetings — replace these to match your bot's persona ───
 // Plain text shown in chat. TTS text is the same by default but you can
 // adjust (e.g. expand abbreviations, add pauses) for more natural speech.
-const GREETING_TEXT = '안녕하세요. 무엇을 도와드릴까요?'
-const GREETING_TTS  = '안녕하세요. 무엇을 도와드릴까요?'
+const GREETING_TEXT = '왔는가. 나가 강캡틴이다. 출조각·어종·시세·물때… 바다 일은 뭐든 물어보시소.'
+const GREETING_TTS  = '왔는가. 나가 강캡틴이다. 출조각, 어종, 시세, 물때. 바다 일은 뭐든 물어보시소.'
 
 function normalizeTranscript(text) {
   return (text || '').replace(/\s+/g, ' ').trim()
@@ -57,10 +58,11 @@ export default function App() {
   const [videoReady, setVideoReady]     = useState(false)    // VRM 로드 완료 여부
   const [isListening, setIsListening]   = useState(false)
   const [autoListen, setAutoListen]     = useState(false)
-  const [conversationMode, setConversationMode] = useState('ftf')  // ftf | sts | ttt
+  const [conversationMode, setConversationMode] = useState('ftf')  // ftf | sts | ttt — 기본 화상(아바타+캠), 토글로 변경
   const [cameraStream, setCameraStream] = useState(null)
   const [user, setUser] = useState(getUser())   // 로그인된 사용자 (없으면 null = 익명)
-  const [authOpen, setAuthOpen] = useState(() => !getUser())
+  const [authOpen, setAuthOpen] = useState(false)
+  const [dockOpen, setDockOpen] = useState(false)   // 우하단 강캡틴 봇 토글
   const [theme, setTheme] = useState(() => {
     if (typeof window === 'undefined') return 'light'
     return localStorage.getItem('theme') === 'dark' ? 'dark' : 'light'
@@ -650,46 +652,58 @@ export default function App() {
     }
   }, [])
 
+  // 독을 처음 열면 텍스트 대화 자동 시작 (강캡틴 인사)
+  useEffect(() => {
+    if (dockOpen && status === 'idle') startConversation()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [dockOpen])
+
   const isChatConnected = status !== 'idle' && status !== 'connecting'
 
   return (
     <div className={styles.app}>
-      <AvatarPanel
-        status={status}
-        mode={conversationMode}
-        onModeChange={changeConversationMode}
-        vrmAvatarRef={vrmAvatarRef}
-        onAvatarReady={handleAvatarReady}
-        userVideoRef={userVideoRef}
-        videoReady={videoReady}
-        cameraActive={Boolean(cameraStream)}
-        onStart={startConversation}
-        onStop={stopAvatar}
-        onInterrupt={interruptAvatar}
-        isListening={isListening}
-      />
-      <ChatPanel
-        messages={messages}
-        isProcessing={isProcessing}
-        onSend={sendMessage}
-        connected={isChatConnected}
-        isListening={isListening}
-        onToggleMic={toggleMic}
-        micEnabled={conversationMode !== 'ttt' && isChatConnected}
-        micAvailable={conversationMode !== 'ttt'}
-        mode={conversationMode}
-        user={user}
-        onLoginClick={() => setAuthOpen(true)}
-        onLogout={handleLogout}
-        theme={theme}
-        onToggleTheme={toggleTheme}
-      />
+      {/* 메인: 출조각 인터랙티브 바다 플랫폼 */}
+      <OceanLanding onOpenBot={() => setDockOpen(true)} />
+
+      {/* 우하단 토글: 강캡틴 봇 (아바타 + 채팅 + TTT/STS/FTF 모드) */}
+      <CaptainDock open={dockOpen} onOpen={() => setDockOpen(true)} onClose={() => setDockOpen(false)}>
+        <AvatarPanel
+          status={status}
+          mode={conversationMode}
+          onModeChange={changeConversationMode}
+          vrmAvatarRef={vrmAvatarRef}
+          onAvatarReady={handleAvatarReady}
+          userVideoRef={userVideoRef}
+          videoReady={videoReady}
+          cameraActive={Boolean(cameraStream)}
+          onStart={startConversation}
+          onStop={stopAvatar}
+          onInterrupt={interruptAvatar}
+          isListening={isListening}
+        />
+        <ChatPanel
+          messages={messages}
+          isProcessing={isProcessing}
+          onSend={sendMessage}
+          connected={isChatConnected}
+          isListening={isListening}
+          onToggleMic={toggleMic}
+          micEnabled={conversationMode !== 'ttt' && isChatConnected}
+          micAvailable={conversationMode !== 'ttt'}
+          mode={conversationMode}
+          user={user}
+          onLoginClick={() => setAuthOpen(true)}
+          onLogout={handleLogout}
+          theme={theme}
+          onToggleTheme={toggleTheme}
+        />
+      </CaptainDock>
+
       <AuthModal
         open={authOpen}
         onClose={() => setAuthOpen(false)}
         onSuccess={(u) => setUser(u)}
       />
-      <FishPip />
     </div>
   )
 }

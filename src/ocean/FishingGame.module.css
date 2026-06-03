@@ -1,0 +1,181 @@
+.overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 12000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  background: rgba(2, 16, 22, 0.7);
+  backdrop-filter: blur(6px);
+  animation: fade 0.2s ease;
+}
+@keyframes fade { from { opacity: 0; } to { opacity: 1; } }
+
+.scene {
+  position: relative;
+  width: min(460px, 96vw);
+  height: min(660px, 92vh);
+  border-radius: 22px;
+  overflow: hidden;
+  background: linear-gradient(180deg, #1796bf 0%, #0a4d6b 45%, #062a3b 100%);
+  border: 1px solid rgba(127, 216, 232, 0.4);
+  box-shadow: 0 30px 80px rgba(0, 0, 0, 0.6);
+  font-family: 'Noto Sans KR', sans-serif;
+  color: #eaf6fb;
+  display: flex;
+  flex-direction: column;
+}
+
+.close {
+  position: absolute;
+  top: 12px; right: 12px;
+  z-index: 6;
+  width: 34px; height: 34px;
+  border: none; border-radius: 50%;
+  background: rgba(0, 0, 0, 0.35);
+  color: #fff; font-size: 16px; cursor: pointer;
+}
+.close:hover { background: rgba(0, 0, 0, 0.55); }
+
+.hud {
+  position: relative;
+  z-index: 5;
+  display: flex; flex-direction: column; gap: 2px;
+  padding: 14px 16px 8px;
+  background: linear-gradient(180deg, rgba(190, 240, 250, 0.22), transparent);
+  flex-shrink: 0;
+}
+.hudTitle { font-family: 'Jua', sans-serif; font-size: 18px; color: #fff; }
+.hudStat { font-size: 12px; opacity: 0.85; }
+.hudStat b { color: #f0b429; }
+
+/* 물속 — 인터랙션 영역 */
+.water {
+  position: relative;
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+  touch-action: none;
+  cursor: crosshair;
+}
+.water.aiming { cursor: none; }
+
+.lineSvg { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; z-index: 2; }
+
+.fishWrap { position: absolute; inset: 0; z-index: 1; pointer-events: none; }
+.swimFish {
+  position: absolute;
+  top: 0; left: 0;
+  width: 68px; height: 48px;
+  will-change: transform;
+}
+.swimFish svg { width: 100%; height: 100%; display: block; filter: drop-shadow(0 3px 6px rgba(0,0,0,.25)); }
+
+/* 조준 마커 (idle) */
+.aim {
+  position: absolute; top: 0; left: 0;
+  width: 32px; height: 32px; border-radius: 50%;
+  border: 2px dashed rgba(255, 255, 255, 0.85);
+  pointer-events: none; z-index: 4;
+  animation: aimSpin 4s linear infinite;
+}
+.aim::after {
+  content: ''; position: absolute; inset: 12px; border-radius: 50%;
+  background: rgba(240, 180, 41, 0.9);
+}
+@keyframes aimSpin { to { transform: rotate(360deg); } }
+
+/* 바늘 */
+.hook {
+  position: absolute; top: 0; left: 0;
+  z-index: 3; pointer-events: none;
+  transition: opacity 0.2s ease;
+}
+.hookTip {
+  display: block;
+  width: 13px; height: 18px;
+  border: 2.5px solid #eaf6fb; border-top: none;
+  border-radius: 0 0 11px 11px;
+}
+.hookBite { animation: hookShake 0.16s ease-in-out infinite; border-color: #ff5a4d; }
+@keyframes hookShake { 0%,100%{ transform: translateX(-2px) rotate(-6deg);} 50%{ transform: translateX(2px) rotate(6deg);} }
+
+.biteHint {
+  position: absolute; top: 12px; left: 50%; transform: translateX(-50%);
+  z-index: 5;
+  font-family: 'Jua', sans-serif; font-size: 15px; color: #fff;
+  background: linear-gradient(135deg, #ff5a4d, #f0b429);
+  padding: 6px 16px; border-radius: 999px;
+  box-shadow: 0 6px 18px rgba(255, 90, 77, 0.5);
+  animation: bitebob 0.5s ease-in-out infinite alternate;
+}
+@keyframes bitebob { from { transform: translateX(-50%) translateY(0);} to { transform: translateX(-50%) translateY(-4px);} }
+
+.flash {
+  position: absolute; top: 46%; left: 50%; transform: translateX(-50%);
+  z-index: 5; font-family: 'Jua', sans-serif; font-size: 20px; color: #fff;
+  text-shadow: 0 2px 10px rgba(0,0,0,.5);
+  animation: flashUp 1.3s ease-out forwards;
+}
+@keyframes flashUp { 0%{opacity:0; transform:translate(-50%,10px);} 20%{opacity:1;} 100%{opacity:0; transform:translate(-50%,-24px);} }
+
+.status {
+  text-align: center; font-size: 13px; opacity: 0.92; font-weight: 600;
+  padding: 8px 16px; flex-shrink: 0; min-height: 20px;
+}
+
+/* 조과 카드 — 물속 위로 오버레이 */
+.catchCard {
+  position: absolute;
+  left: 14px; right: 14px; bottom: 78px;
+  max-height: 62%;
+  overflow-y: auto; z-index: 7;
+  padding: 14px 16px;
+  border-radius: 16px;
+  background: linear-gradient(160deg, rgba(6, 42, 59, 0.97), rgba(10, 77, 107, 0.97));
+  border: 1px solid #7fd8e8;
+  box-shadow: 0 18px 44px rgba(0, 0, 0, 0.5);
+  animation: slideUp 0.4s cubic-bezier(.34,1.56,.64,1);
+}
+@keyframes slideUp { from { transform: translateY(30px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+.catchHead { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
+.catchEmoji { font-size: 34px; }
+.catchName { font-family: 'Jua', sans-serif; font-size: 20px; color: #fff; }
+.catchSize { font-size: 13px; color: #f0b429; margin-left: 4px; }
+.catchMeta { font-size: 12px; color: #f0b429; opacity: 0.95; margin-top: 2px; }
+.catchRows { margin-bottom: 10px; }
+.cRow { display: flex; justify-content: space-between; font-size: 13px; padding: 5px 0; border-bottom: 1px dashed rgba(127, 216, 232, 0.25); }
+.cRow span { opacity: 0.8; }
+
+.market { border-radius: 12px; background: rgba(240, 180, 41, 0.12); border: 1px solid rgba(240, 180, 41, 0.4); padding: 10px 12px; }
+.marketTag { font-family: 'Jua', sans-serif; font-size: 14px; color: #f0b429; margin-bottom: 6px; }
+.marketRow { display: flex; justify-content: space-between; font-size: 13px; padding: 3px 0; }
+.marketRow b { color: #fff; }
+.marketTotal { color: #f0b429 !important; font-size: 15px; }
+.marketDelivery { font-size: 11.5px; opacity: 0.8; margin-top: 6px; }
+.note { font-size: 12.5px; line-height: 1.5; opacity: 0.9; font-style: italic; margin-top: 10px; }
+
+/* 컨트롤 */
+.controls {
+  position: relative; z-index: 8;
+  padding: 12px 16px 16px;
+  display: flex; justify-content: center;
+  background: linear-gradient(0deg, rgba(3, 34, 47, 0.92), transparent);
+  flex-shrink: 0;
+}
+.ctrlHint { font-size: 12.5px; opacity: 0.7; text-align: center; }
+.castBtn {
+  font-family: 'Jua', sans-serif; font-size: 16px;
+  padding: 12px 28px; border: none; border-radius: 999px;
+  background: linear-gradient(135deg, #11789e, #1796bf); color: #fff; cursor: pointer;
+  box-shadow: 0 8px 22px rgba(0, 0, 0, 0.4); transition: transform 0.12s ease;
+}
+.castBtn:hover { transform: translateY(-2px); }
+.caughtBtns { display: flex; gap: 8px; }
+.ghostBtn {
+  font-family: 'Jua', sans-serif; font-size: 14px; padding: 12px 16px;
+  border: 1px solid rgba(127, 216, 232, 0.5); border-radius: 999px;
+  background: rgba(255, 255, 255, 0.08); color: #eaf6fb; cursor: pointer;
+}
+.ghostBtn:hover { background: rgba(127, 216, 232, 0.2); }

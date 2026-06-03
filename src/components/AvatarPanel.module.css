@@ -57,9 +57,9 @@
 
 .sideBySide .videoWrap,
 .sideBySide .cameraPreview {
-  width: min(300px, calc(50% - 14px));
-  max-width: 300px;
-  max-height: min(54vh, 500px);
+  width: min(200px, calc(50% - 10px));
+  max-width: 200px;
+  max-height: 280px;
   aspect-ratio: 3/4;
 }
 
@@ -440,8 +440,8 @@
 }
 
 .optionToggleOn {
-  background: rgba(184,138,94,0.18);
-  border-color: rgba(184,138,94,0.55);
+  background: var(--ui-accent-bg, rgba(184,138,94,0.18));
+  border-color: var(--ui-accent-border, rgba(184,138,94,0.55));
   color: var(--text);
 }
 
@@ -483,8 +483,8 @@
 }
 
 .optionToggleOn .toggleTrack {
-  background: rgba(184,138,94,0.45);
-  border-color: rgba(139,90,43,0.55);
+  background: var(--ui-accent-strong, rgba(184,138,94,0.45));
+  border-color: var(--ui-accent-border, rgba(139,90,43,0.55));
 }
 
 .optionToggleOn .toggleTrack span {

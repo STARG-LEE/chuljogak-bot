@@ -100,8 +100,8 @@
 
 .surveyBtn {
   flex-shrink: 0;
-  background: rgba(184,138,94,0.12);
-  border: 1px solid rgba(184,138,94,0.45);
+  background: var(--ui-accent-bg, rgba(184,138,94,0.12));
+  border: 1px solid var(--ui-accent-border, rgba(184,138,94,0.45));
   color: var(--gold);
   border-radius: 6px;
   padding: 4px 12px;

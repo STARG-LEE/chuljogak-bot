@@ -9,30 +9,38 @@ function clamp(v, min, max) {
   return Math.min(Math.max(min, v), Math.max(min, max))
 }
 
+// 화면의 절반 정도(너비 ~50vw, 높이 거의 전체)로 크게.
+function computeSize() {
+  if (typeof window === 'undefined') return { w: 640, h: 760 }
+  const w = Math.round(Math.min(Math.max(window.innerWidth * 0.5, 460), 960, window.innerWidth - MARGIN * 2))
+  const h = Math.round(Math.min(window.innerHeight - MARGIN * 2, 980))
+  return { w, h }
+}
+
 export default function CaptainDock({ open, onOpen, onClose, children }) {
   const [pos, setPos] = useState(null) // {x,y} 좌상단. null = 기본 우하단
+  const [size, setSize] = useState(computeSize)
   const dragRef = useRef(null)
-  const sizeRef = useRef({ w: 420, h: 700 })
+  const sizeRef = useRef(size)
 
-  // 처음 열 때 우하단 배치
-  useEffect(() => {
-    if (open && pos === null) {
-      const w = Math.min(420, window.innerWidth - MARGIN * 2)
-      const h = Math.min(700, window.innerHeight - MARGIN * 2)
-      sizeRef.current = { w, h }
-      setPos({ x: window.innerWidth - w - MARGIN, y: window.innerHeight - h - MARGIN })
-    }
-  }, [open, pos])
-
+  // 열림/리사이즈 시 크기 재계산 + 우하단 배치 + 화면 안 보정
   useEffect(() => {
     if (!open) return
-    const onResize = () =>
-      setPos((p) => (p ? {
-        x: clamp(p.x, MARGIN, window.innerWidth - sizeRef.current.w - MARGIN),
-        y: clamp(p.y, MARGIN, window.innerHeight - sizeRef.current.h - MARGIN),
-      } : p))
-    window.addEventListener('resize', onResize)
-    return () => window.removeEventListener('resize', onResize)
+    const apply = () => {
+      const s = computeSize()
+      sizeRef.current = s
+      setSize(s)
+      setPos((p) => {
+        if (!p) return { x: window.innerWidth - s.w - MARGIN, y: window.innerHeight - s.h - MARGIN }
+        return {
+          x: clamp(p.x, MARGIN, window.innerWidth - s.w - MARGIN),
+          y: clamp(p.y, MARGIN, window.innerHeight - s.h - MARGIN),
+        }
+      })
+    }
+    apply()
+    window.addEventListener('resize', apply)
+    return () => window.removeEventListener('resize', apply)
   }, [open])
 
   const onPointerDown = useCallback((e) => {
@@ -68,7 +76,7 @@ export default function CaptainDock({ open, onOpen, onClose, children }) {
   return (
     <div
       className={styles.dock}
-      style={pos ? { left: pos.x, top: pos.y } : { right: MARGIN, bottom: MARGIN }}
+      style={{ width: size.w, height: size.h, ...(pos ? { left: pos.x, top: pos.y } : { right: MARGIN, bottom: MARGIN }) }}
     >
       <div className={styles.header} onPointerDown={onPointerDown}>
         <span className={styles.title}>🧑‍✈️ 강캡틴 · 출조각 AI</span>

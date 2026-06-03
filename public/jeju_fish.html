@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>제주도 어종 인터랙티브 도감</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Gowun+Batang:wght@400;700&family=Jua&display=swap');
+
+:root {
+  --deep:   #062a3b;
+  --mid:    #0a4d6b;
+  --shal:   #11789e;
+  --foam:   #7fd8e8;
+  --sand:   #f3e6c4;
+  --gold:   #f0b429;
+  --coral:  #ff6b5e;
+  --ink:    #03222f;
+}
+
+* { margin:0; padding:0; box-sizing:border-box; }
+
+body {
+  font-family:'Gowun Batang', serif;
+  background: linear-gradient(180deg, var(--shal) 0%, var(--mid) 35%, var(--deep) 100%);
+  min-height:100vh;
+  overflow-x:hidden;
+  color:var(--sand);
+  position:relative;
+}
+
+/* 물결 / 빛 효과 */
+.light-rays { position:fixed; inset:0; pointer-events:none; z-index:0;
+  background:
+    linear-gradient(105deg, transparent 40%, rgba(180,240,255,.08) 45%, transparent 50%),
+    linear-gradient(75deg, transparent 60%, rgba(180,240,255,.06) 64%, transparent 68%);
+}
+.bubbles { position:fixed; inset:0; pointer-events:none; z-index:0; }
+.bubble { position:absolute; bottom:-40px; border-radius:50%;
+  background:radial-gradient(circle at 30% 30%, rgba(255,255,255,.6), rgba(127,216,232,.1));
+  animation:rise linear infinite; }
+@keyframes rise { to { transform:translateY(-110vh) translateX(40px); opacity:0; } }
+
+header { position:relative; z-index:2; text-align:center; padding:48px 20px 16px; }
+header h1 { font-family:'Jua', sans-serif; font-size:clamp(2rem,5vw,3.4rem);
+  color:var(--foam); letter-spacing:2px; text-shadow:0 4px 18px rgba(0,0,0,.5); }
+header p { margin-top:10px; color:var(--sand); opacity:.85; font-size:1.05rem; }
+
+/* 필터 */
+.filters { position:relative; z-index:2; display:flex; gap:10px; flex-wrap:wrap;
+  justify-content:center; margin:24px auto 8px; max-width:900px; padding:0 16px; }
+.filters button { font-family:'Jua',sans-serif; cursor:pointer; border:none;
+  padding:9px 18px; border-radius:30px; background:rgba(255,255,255,.12);
+  color:var(--sand); font-size:.95rem; transition:.25s; backdrop-filter:blur(4px);
+  border:1px solid rgba(127,216,232,.25); }
+.filters button:hover { background:rgba(127,216,232,.3); transform:translateY(-2px); }
+.filters button.active { background:var(--gold); color:var(--ink); border-color:var(--gold); }
+
+/* 수족관 */
+.tank { position:relative; z-index:2; max-width:1100px; margin:30px auto 80px;
+  display:grid; grid-template-columns:repeat(auto-fill,minmax(230px,1fr));
+  gap:24px; padding:0 24px; }
+
+.fish-card { position:relative; cursor:pointer; padding:24px 16px;
+  border-radius:20px; background:rgba(3,34,47,.35);
+  border:1px solid rgba(127,216,232,.18); backdrop-filter:blur(3px);
+  transition:transform .35s cubic-bezier(.34,1.56,.64,1), box-shadow .35s; }
+.fish-card:hover { transform:translateY(-8px) scale(1.03);
+  box-shadow:0 18px 40px rgba(0,0,0,.45); border-color:var(--foam); }
+
+.fish-art { display:block; margin:0 auto; animation:swim 5s ease-in-out infinite; }
+@keyframes swim { 0%,100%{transform:translateY(0) rotate(-1deg);}
+  50%{transform:translateY(-8px) rotate(1deg);} }
+
+.fish-name { text-align:center; margin-top:14px; font-family:'Jua',sans-serif;
+  font-size:1.25rem; color:var(--foam); }
+.fish-sub { text-align:center; font-size:.82rem; opacity:.7; margin-top:2px; }
+.diff { text-align:center; margin-top:6px; color:var(--gold); letter-spacing:2px; }
+
+/* 툴팁 패널 */
+.tooltip { position:fixed; z-index:50; width:300px; pointer-events:none;
+  background:linear-gradient(160deg, rgba(6,42,59,.97), rgba(10,77,107,.97));
+  border:1px solid var(--foam); border-radius:16px; padding:18px 20px;
+  box-shadow:0 20px 50px rgba(0,0,0,.6); opacity:0; transform:scale(.9);
+  transition:opacity .18s, transform .18s; }
+.tooltip.show { opacity:1; transform:scale(1); }
+.tooltip h3 { font-family:'Jua',sans-serif; color:var(--gold); font-size:1.4rem;
+  margin-bottom:4px; }
+.tooltip .tag { display:inline-block; font-size:.72rem; background:var(--coral);
+  color:#fff; padding:2px 8px; border-radius:10px; margin-bottom:10px; }
+.tip-row { display:flex; justify-content:space-between; gap:10px;
+  font-size:.86rem; padding:5px 0; border-bottom:1px dashed rgba(127,216,232,.25); }
+.tip-row span:first-child { color:var(--foam); opacity:.85; }
+.tip-row span:last-child { text-align:right; font-weight:700; }
+.tip-note { margin-top:10px; font-size:.82rem; line-height:1.45; opacity:.9;
+  font-style:italic; }
+.season-pill { display:inline-block; font-size:.72rem; margin:2px 3px 0 0;
+  padding:2px 8px; border-radius:10px; background:rgba(127,216,232,.2); }
+
+footer { position:relative; z-index:2; text-align:center; padding:20px;
+  font-size:.8rem; opacity:.6; }
+</style>
+</head>
+<body>
+<div class="light-rays"></div>
+<div class="bubbles" id="bubbles"></div>
+
+<header>
+  <h1>🐟 제주도 어종 인터랙티브 도감</h1>
+  <p>물고기 위에 마우스를 올리면 상세 정보가 나타납니다 · 필터로 시즌별 어종을 골라보세요</p>
+</header>
+
+<div class="filters" id="filters"></div>
+<main class="tank" id="tank"></main>
+
+<div class="tooltip" id="tooltip"></div>
+
+<footer>제주도 시즌·지역·시세·난이도·맛·물때 정보 기반 · 인터랙티브 도감</footer>
+
+<script>
+/* ---------- 데이터 ---------- */
+const fishData = [
+  { id:'galchi', name:'갈치', sub:'평균 60~100cm', color:'#cfd8e3', accent:'#9aa7b5',
+    seasons:['여름','가을'], regions:'남부·북부권', price:'15,000~70,000원/kg+',
+    diff:2, taste:'A급', size:'60~100cm', time:'야간', tide:'사리에 활성 ↑',
+    note:'제주 대표 야간 선상낚시 어종. 회보다 구이·조림으로 유명. 6월부터 본격 시즌.' },
+  { id:'hanchi', name:'한치', sub:'평균 15~30cm', color:'#ffd9b3', accent:'#ff9e6d',
+    seasons:['여름','가을'], regions:'남부·북부권', price:'15,000~35,000원/kg',
+    diff:1, taste:'A급', size:'15~30cm', time:'야간', tide:'-',
+    note:'입문용 선상낚시. 조황이 안정적이며 달고 부드러운 식감이 일품.' },
+  { id:'chamdom', name:'참돔', sub:'평균 30~70cm', color:'#ff8a9b', accent:'#e85d72',
+    seasons:['봄','여름'], regions:'동부·남부권', price:'20,000~50,000원+',
+    diff:3, taste:'S급', size:'30~70cm', time:'새벽·오전', tide:'-',
+    note:'타이라바 운용 경험이 필요한 보통 난이도. 수온 상승기 활성도가 높다.' },
+  { id:'gabojingeo', name:'갑오징어', sub:'평균 300~800g', color:'#f5e6c8', accent:'#c9a86a',
+    seasons:['봄'], regions:'동부권', price:'20,000~45,000원/kg',
+    diff:1, taste:'A급', size:'300~800g', time:'새벽·오전', tide:'조금에 유리',
+    note:'초보자 추천. 채비 운용이 쉬워 입문자에게 최적. 봄이 핵심 시기.' },
+  { id:'busiri', name:'부시리', sub:'평균 60~120cm', color:'#aee0d2', accent:'#5fae98',
+    seasons:['가을','겨울'], regions:'서부권', price:'12,000~25,000원/kg',
+    diff:4, taste:'B급', size:'60~120cm', time:'오전', tide:'사리에 활성 ↑',
+    note:'힘이 매우 강해 장비 운용이 중요한 어려운 어종. 대형 개체를 노릴 수 있다.' },
+  { id:'bangeo', name:'방어', sub:'평균 70~120cm', color:'#9ec9e8', accent:'#4d8fc4',
+    seasons:['겨울','가을'], regions:'서부권', price:'15,000~40,000원/kg+',
+    diff:5, taste:'S급', size:'70~120cm', time:'오전', tide:'사리에 활성 ↑',
+    note:'겨울 제주 대물 시즌. 대방어는 지방이 풍부해 최고급 횟감. 체력 소모가 크다.' },
+  { id:'doldom', name:'돌돔', sub:'평균 35~60cm', color:'#e8e8ec', accent:'#5c5c66',
+    seasons:['봄','겨울'], regions:'서부권', price:'40,000~80,000원/kg',
+    diff:5, taste:'S급', size:'35~60cm', time:'오전', tide:'-',
+    note:'제주 최고 난이도급. 포인트와 타이밍이 관건인 제주 대표 고급 횟감.' },
+];
+
+const filters = ['전체','봄','여름','가을','겨울'];
+
+/* ---------- 물고기 SVG 생성기 ---------- */
+function fishSVG(f){
+  const isSquid = (f.id==='hanchi' || f.id==='gabojingeo');
+  if(isSquid){
+    // 오징어/한치 형태
+    return `<svg class="fish-art" width="150" height="110" viewBox="0 0 150 110">
+      <defs><radialGradient id="g${f.id}" cx="50%" cy="35%" r="70%">
+        <stop offset="0%" stop-color="${f.color}"/><stop offset="100%" stop-color="${f.accent}"/>
+      </radialGradient></defs>
+      <ellipse cx="75" cy="42" rx="30" ry="34" fill="url(#g${f.id})" stroke="${f.accent}" stroke-width="2"/>
+      <path d="M55 8 L75 30 L95 8 Z" fill="${f.color}" opacity=".8"/>
+      <circle cx="65" cy="40" r="5" fill="#fff"/><circle cx="66" cy="41" r="2.6" fill="#03222f"/>
+      <circle cx="85" cy="40" r="5" fill="#fff"/><circle cx="84" cy="41" r="2.6" fill="#03222f"/>
+      ${[0,1,2,3,4,5,6,7].map(i=>{
+        const x=58+i*4.6; return `<path d="M${x} 72 Q${x+ (i%2?6:-6)} 95 ${x+(i%2?2:-2)} 108"
+          stroke="${f.accent}" stroke-width="3" fill="none" stroke-linecap="round" opacity=".85"/>`;
+      }).join('')}
+    </svg>`;
+  }
+  // 일반 물고기 형태
+  return `<svg class="fish-art" width="160" height="100" viewBox="0 0 160 100">
+    <defs><linearGradient id="g${f.id}" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="${f.color}"/><stop offset="100%" stop-color="${f.accent}"/>
+    </linearGradient></defs>
+    <path d="M125 50 L150 30 L148 50 L150 70 Z" fill="${f.accent}"/>
+    <path d="M20 50 C20 18 110 18 128 50 C110 82 20 82 20 50 Z" fill="url(#g${f.id})"
+      stroke="${f.accent}" stroke-width="2"/>
+    <path d="M60 22 L78 8 L82 26 Z" fill="${f.accent}" opacity=".85"/>
+    <path d="M55 78 L72 92 L78 74 Z" fill="${f.accent}" opacity=".7"/>
+    <circle cx="42" cy="46" r="7" fill="#fff"/><circle cx="44" cy="47" r="3.6" fill="#03222f"/>
+    <path d="M88 36 Q105 50 88 64" stroke="${f.accent}" stroke-width="1.6" fill="none" opacity=".5"/>
+    <path d="M100 38 Q115 50 100 62" stroke="${f.accent}" stroke-width="1.6" fill="none" opacity=".4"/>
+    <path d="M22 50 Q20 56 26 58" stroke="#03222f" stroke-width="2" fill="none" opacity=".5"/>
+  </svg>`;
+}
+
+const stars = n => '★'.repeat(n)+'☆'.repeat(5-n);
+
+/* ---------- 렌더링 ---------- */
+const tank = document.getElementById('tank');
+const tooltip = document.getElementById('tooltip');
+
+function render(filter='전체'){
+  tank.innerHTML='';
+  fishData.filter(f=>filter==='전체'||f.seasons.includes(filter)).forEach((f,i)=>{
+    const card=document.createElement('div');
+    card.className='fish-card';
+    card.style.animationDelay=(i*0.1)+'s';
+    card.innerHTML = fishSVG(f) +
+      `<div class="fish-name">${f.name}</div>
+       <div class="fish-sub">${f.sub}</div>
+       <div class="diff">${stars(f.diff)}</div>`;
+    card.querySelector('.fish-art').style.animationDelay=(i*0.4)+'s';
+
+    card.addEventListener('mousemove',e=>showTip(e,f));
+    card.addEventListener('mouseenter',e=>showTip(e,f));
+    card.addEventListener('mouseleave',()=>tooltip.classList.remove('show'));
+    tank.appendChild(card);
+  });
+}
+
+function showTip(e,f){
+  tooltip.innerHTML = `
+    <span class="tag">${f.taste} 횟감 · 난이도 ${stars(f.diff)}</span>
+    <h3>${f.name}</h3>
+    <div>${f.seasons.map(s=>`<span class="season-pill">${s}</span>`).join('')}</div>
+    <div style="margin-top:8px">
+      <div class="tip-row"><span>평균 크기</span><span>${f.size}</span></div>
+      <div class="tip-row"><span>주요 지역</span><span>${f.regions}</span></div>
+      <div class="tip-row"><span>평균 시세</span><span>${f.price}</span></div>
+      <div class="tip-row"><span>추천 출조</span><span>${f.time}</span></div>
+      <div class="tip-row"><span>물때</span><span>${f.tide}</span></div>
+    </div>
+    <div class="tip-note">💡 ${f.note}</div>`;
+  tooltip.classList.add('show');
+  let x=e.clientX+18, y=e.clientY+18;
+  if(x+300>window.innerWidth) x=e.clientX-318;
+  if(y+260>window.innerHeight) y=window.innerHeight-270;
+  tooltip.style.left=x+'px'; tooltip.style.top=y+'px';
+}
+
+/* 필터 버튼 */
+const fbox=document.getElementById('filters');
+filters.forEach((f,i)=>{
+  const b=document.createElement('button');
+  b.textContent=f==='전체'?f:f+'철';
+  if(i===0)b.classList.add('active');
+  b.onclick=()=>{ document.querySelectorAll('.filters button').forEach(x=>x.classList.remove('active'));
+    b.classList.add('active'); render(f); };
+  fbox.appendChild(b);
+});
+
+/* 버블 */
+const bb=document.getElementById('bubbles');
+for(let i=0;i<22;i++){
+  const d=document.createElement('div'); d.className='bubble';
+  const s=4+Math.random()*16;
+  d.style.width=d.style.height=s+'px';
+  d.style.left=Math.random()*100+'%';
+  d.style.animationDuration=(6+Math.random()*10)+'s';
+  d.style.animationDelay=(Math.random()*8)+'s';
+  bb.appendChild(d);
+}
+
+render();
+</script>
+</body>
+</html>

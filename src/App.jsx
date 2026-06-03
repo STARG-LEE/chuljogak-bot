@@ -2,6 +2,7 @@ import { useState, useRef, useCallback, useEffect } from 'react'
 import AvatarPanel from './components/AvatarPanel'
 import ChatPanel from './components/ChatPanel'
 import AuthModal from './components/AuthModal'
+import FishPip from './components/FishPip'
 import styles from './App.module.css'
 import { newSessionId, saveChat, getUser, clearAuth, verifyToken } from './lib/api'
 import { MicRecorder, isMicRecorderSupported } from './lib/stt'
@@ -688,6 +689,7 @@ export default function App() {
         onClose={() => setAuthOpen(false)}
         onSuccess={(u) => setUser(u)}
       />
+      <FishPip />
     </div>
   )
 }

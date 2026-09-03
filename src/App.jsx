@@ -666,7 +666,7 @@ export default function App() {
       <OceanLanding onOpenBot={() => setDockOpen(true)} />
 
       {/* 우하단 토글: 강캡틴 봇 (아바타 + 채팅 + TTT/STS/FTF 모드) */}
-      <CaptainDock open={dockOpen} onOpen={() => setDockOpen(true)} onClose={() => setDockOpen(false)}>
+      <CaptainDock open={dockOpen} onOpen={() => setDockOpen(true)} onClose={() => { interruptAvatar(); setDockOpen(false) }}>
         <AvatarPanel
           status={status}
           mode={conversationMode}
